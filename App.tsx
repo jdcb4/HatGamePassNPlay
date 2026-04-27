@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -21,6 +21,7 @@ import {
 import { buildDefaultSetup, getHatGameSetupError } from './src/domain/hatGame/setup';
 import { formatCountdown, getCountdownSeconds } from './src/domain/hatGame/time';
 import type { ClueSubmissionMap, HatGameAction, HatGameSession, Player, Team } from './src/domain/hatGame/types';
+import { playSoundCue } from './src/audio/soundCues';
 import { clearSavedState, loadSavedState, saveState } from './src/services/storage';
 
 type AppStep = 'landing' | 'counts' | 'team' | 'review' | 'clues' | 'game';
@@ -119,6 +120,8 @@ export default function App() {
   const [error, setError] = useState('');
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [confirmNewGame, setConfirmNewGame] = useState(false);
+  const warningCueTurnRef = useRef<string | null>(null);
+  const turnEndCueTurnRef = useRef<string | null>(null);
 
   useEffect(() => {
     loadSavedState<StoragePayload | AppSnapshot>()
@@ -161,12 +164,18 @@ export default function App() {
   useEffect(() => {
     if (snapshot.step !== 'game' || snapshot.session?.stage !== 'turn' || !snapshot.session.activeTurn?.endsAt) {
       setSecondsRemaining(0);
+      warningCueTurnRef.current = null;
       return undefined;
     }
 
+    const turnCueKey = snapshot.session.activeTurn.startedAt;
     const tick = () => {
       const remaining = getCountdownSeconds(snapshot.session?.activeTurn?.endsAt);
       setSecondsRemaining(remaining);
+      if (remaining <= 10 && remaining > 0 && warningCueTurnRef.current !== turnCueKey) {
+        warningCueTurnRef.current = turnCueKey;
+        playSoundCue('ten-second-warning');
+      }
       if (remaining <= 0) {
         dispatchGameAction({ type: 'end-turn' });
       }
@@ -339,22 +348,47 @@ export default function App() {
   };
 
   const dispatchGameAction = (action: HatGameAction) => {
-    setSnapshot((current) => {
-      if (!current.session) {
-        return current;
+    const previousSession = snapshot.session;
+    if (!previousSession) {
+      return;
+    }
+    const result = applyHatGameAction(previousSession, action);
+    if (isError(result)) {
+      setError(result.error);
+      return;
+    }
+
+    if (action.type === 'start-turn' && previousSession.stage === 'ready' && result.stage === 'turn') {
+      playSoundCue('turn-start');
+    }
+    if (action.type === 'mark-correct') {
+      playSoundCue('correct');
+    }
+    if (action.type === 'skip-clue') {
+      playSoundCue('skip');
+    }
+    if (previousSession.stage === 'turn' && result.stage !== 'turn') {
+      const turnCueKey = previousSession.activeTurn?.startedAt ?? previousSession.activeTurn?.endsAt ?? '';
+      if (turnEndCueTurnRef.current !== turnCueKey) {
+        turnEndCueTurnRef.current = turnCueKey;
+        playSoundCue('turn-end');
       }
-      const result = applyHatGameAction(current.session, action);
-      if (isError(result)) {
-        setError(result.error);
-        return current;
+    }
+    if (result.phaseNumber !== previousSession.phaseNumber) {
+      if (result.phaseNumber === 2) {
+        playSoundCue('phase-one-word');
       }
-      setError('');
-      return {
-        ...current,
-        session: result,
-        handoffRevealed: result.stage === 'ready' ? false : current.handoffRevealed
-      };
-    });
+      if (result.phaseNumber === 3) {
+        playSoundCue('phase-charades');
+      }
+    }
+
+    setError('');
+    setSnapshot((current) => ({
+      ...current,
+      session: result,
+      handoffRevealed: result.stage === 'ready' ? false : current.handoffRevealed
+    }));
   };
 
   const playAgain = () => {

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hat Game",
     "slug": "hat-game",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "hatgame",
@@ -29,6 +29,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-audio"
+    ]
   }
 }

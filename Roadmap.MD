@@ -4,7 +4,7 @@ This file tracks future features and improvements that are not yet part of the a
 
 ## Sound Effects
 
-Add lightweight sound effects after the core gameplay loop is stable across web, iOS, and Android.
+Initial sound effects were added in `0.2.0`. Future work should focus on polish, mute controls, and audio QA across web, iOS, and Android.
 
 ### Goals
 
@@ -22,14 +22,14 @@ Add lightweight sound effects after the core gameplay loop is stable across web,
 - Player confirms their clue submissions.
 - Final player finishes clue entry and the game becomes ready to start.
 - Ready handoff screen shown before a turn.
-- Turn starts.
-- Five-second warning before the turn ends.
-- Turn ends.
-- Clue marked correct.
-- Clue skipped.
+- Turn starts. Implemented in `0.2.0`.
+- Ten-second warning before the turn ends. Implemented in `0.2.0`.
+- Turn ends. Implemented in `0.2.0`.
+- Clue marked correct. Implemented in `0.2.0`.
+- Clue skipped. Implemented in `0.2.0`.
 - Skipped clue returned to play.
-- Phase changes from Describe to One Word.
-- Phase changes from One Word to Charades.
+- Phase changes from Describe to One Word. Implemented in `0.2.0`.
+- Phase changes from One Word to Charades. Implemented in `0.2.0`.
 - Final game results shown.
 - Play again starts a fresh session.
 - New game confirmation clears saved progress.
@@ -42,4 +42,3 @@ Add lightweight sound effects after the core gameplay loop is stable across web,
 - Add a small audio service or hook that can be reused by screens.
 - Avoid long sounds during active turns; effects should be short and non-disruptive.
 - Plan for a future mute setting, even if it is not exposed in the first sound-effects release.
-
