@@ -1,0 +1,26 @@
+[
+  {
+    "teamName": "Olympians",
+    "playerNames": ["Zeus", "Hera", "Athena", "Apollo", "Artemis", "Hermes"]
+  },
+  {
+    "teamName": "Explorers",
+    "playerNames": ["Amelia", "Marco", "Sacagawea", "Ernest", "Nellie", "Leif"]
+  },
+  {
+    "teamName": "Inventors",
+    "playerNames": ["Ada", "Nikola", "Grace", "Leonardo", "Marie", "Alan"]
+  },
+  {
+    "teamName": "Legends",
+    "playerNames": ["Arthur", "Merlin", "Guinevere", "Lancelot", "Morgana", "Gawain"]
+  },
+  {
+    "teamName": "Artists",
+    "playerNames": ["Frida", "Pablo", "Georgia", "Vincent", "Yayoi", "Banksy"]
+  },
+  {
+    "teamName": "Astronauts",
+    "playerNames": ["Neil", "Mae", "Buzz", "Sally", "Yuri", "Valentina"]
+  }
+]
