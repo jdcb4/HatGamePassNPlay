@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import type React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -50,6 +50,9 @@ type ScreenModel = {
   content: React.ReactNode;
   actions?: React.ReactNode;
 };
+
+const ACTION_LOCK_MS = 500;
+const ActionLockContext = createContext(false);
 
 const createEmptyClues = () => Array.from({ length: GAME_DEFAULTS.cluesPerPlayer }, () => '');
 
@@ -120,6 +123,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [confirmNewGame, setConfirmNewGame] = useState(false);
+  const [footerActionsLocked, setFooterActionsLocked] = useState(false);
   const warningCueTurnRef = useRef<string | null>(null);
   const turnEndCueTurnRef = useRef<string | null>(null);
 
@@ -197,6 +201,25 @@ export default function App() {
     () => (activeTeam ? snapshot.players.filter((player) => player.teamId === activeTeam.id) : []),
     [activeTeam, snapshot.players]
   );
+
+  const actionLockKey = [
+    loaded ? 'loaded' : 'loading',
+    snapshot.step,
+    snapshot.teamEditIndex,
+    snapshot.clueEntryIndex,
+    snapshot.clueEntryRevealed ? 'clue-open' : 'clue-closed',
+    snapshot.handoffRevealed ? 'handoff-open' : 'handoff-closed',
+    snapshot.session?.stage ?? 'no-session',
+    snapshot.session?.phaseNumber ?? 'no-phase',
+    snapshot.session?.activeTurn?.startedAt ?? 'no-turn',
+    confirmNewGame ? 'confirm-new' : 'normal'
+  ].join(':');
+
+  useEffect(() => {
+    setFooterActionsLocked(true);
+    const timeout = setTimeout(() => setFooterActionsLocked(false), ACTION_LOCK_MS);
+    return () => clearTimeout(timeout);
+  }, [actionLockKey]);
 
   const startNewGame = async () => {
     setConfirmNewGame(false);
@@ -744,7 +767,11 @@ export default function App() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
           {screen.content}
         </ScrollView>
-        {screen.actions ? <View style={styles.footer}>{screen.actions}</View> : null}
+        {screen.actions ? (
+          <ActionLockContext.Provider value={footerActionsLocked}>
+            <View style={styles.footer}>{screen.actions}</View>
+          </ActionLockContext.Provider>
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -813,11 +840,13 @@ function Scoreboard({ session }: { session: HatGameSession }) {
 }
 
 function PrimaryButton({ label, onPress, disabled = false }: ButtonProps) {
+  const footerActionsLocked = useContext(ActionLockContext);
+  const isDisabled = disabled || footerActionsLocked;
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={disabled}
-      style={[styles.button, styles.primaryButton, disabled && styles.disabledButton]}
+      disabled={isDisabled}
+      style={[styles.button, styles.primaryButton, isDisabled && styles.disabledButton]}
       onPress={onPress}
     >
       <Text style={styles.primaryButtonText}>{label}</Text>
@@ -826,11 +855,13 @@ function PrimaryButton({ label, onPress, disabled = false }: ButtonProps) {
 }
 
 function SecondaryButton({ label, onPress, disabled = false }: ButtonProps) {
+  const footerActionsLocked = useContext(ActionLockContext);
+  const isDisabled = disabled || footerActionsLocked;
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={disabled}
-      style={[styles.button, styles.secondaryButton, disabled && styles.disabledButton]}
+      disabled={isDisabled}
+      style={[styles.button, styles.secondaryButton, isDisabled && styles.disabledButton]}
       onPress={onPress}
     >
       <Text style={styles.secondaryButtonText}>{label}</Text>

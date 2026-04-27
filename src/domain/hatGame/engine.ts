@@ -142,7 +142,12 @@ const finishTurn = (session: HatGameSession): HatGameActionResult => {
     ...new Set([
       ...session.usedCluePoolIndices,
       ...activeTurn.clueHistory
-        .filter((entry) => entry.status === 'correct')
+        .filter(
+          (entry) =>
+            entry.status === 'correct' &&
+            (entry.phaseNumber === session.phaseNumber ||
+              (entry.phaseNumber === undefined && session.phaseNumber === 1))
+        )
         .map((entry) => entry.poolIndex)
     ])
   ];
@@ -343,7 +348,8 @@ export const applyHatGameAction = (
       clue: currentClue.text,
       status: 'correct',
       timestamp: makeTimestamp(),
-      poolIndex: currentClue.poolIndex
+      poolIndex: currentClue.poolIndex,
+      phaseNumber: session.phaseNumber
     });
     if (activeTurn.currentSkippedCluePoolIndex === currentClue.poolIndex) {
       activeTurn.currentSkippedCluePoolIndex = null;
@@ -363,7 +369,8 @@ export const applyHatGameAction = (
       clue: currentClue.text,
       status: 'skipped',
       timestamp: makeTimestamp(),
-      poolIndex: currentClue.poolIndex
+      poolIndex: currentClue.poolIndex,
+      phaseNumber: session.phaseNumber
     });
     const [skippedClue] = activeTurn.clueQueue.splice(activeTurn.queueIndex, 1);
     activeTurn.clueQueue.push(skippedClue);
@@ -428,4 +435,3 @@ export const applyHatGameAction = (
     activeTurn
   };
 };
-

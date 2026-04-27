@@ -40,6 +40,7 @@ export type ClueHistoryEntry = {
   status: 'correct' | 'skipped';
   timestamp: string;
   poolIndex: number;
+  phaseNumber?: number;
 };
 
 export type ActiveTurn = {
@@ -122,4 +123,3 @@ export type HatGameAction =
   | { type: 'return-skipped-clue'; payload?: { poolIndex?: number } };
 
 export type HatGameActionResult = HatGameSession | { error: string };
-

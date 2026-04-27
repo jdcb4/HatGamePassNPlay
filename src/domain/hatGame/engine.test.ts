@@ -74,6 +74,25 @@ describe('Hat Game engine', () => {
     expect(session.activeTurn?.endsAt).toBe(endsAt);
   });
 
+  it('does not complete the next phase from previous phase guesses when a turn ends', () => {
+    let session = makeSession({ cluesPerPlayer: 1 });
+    session = unwrap(applyHatGameAction(session, { type: 'start-turn' }, actionOptions));
+
+    for (let index = 0; index < 4; index += 1) {
+      session = unwrap(applyHatGameAction(session, { type: 'mark-correct' }, actionOptions));
+    }
+
+    expect(session.phaseNumber).toBe(2);
+    expect(session.activeTurn?.clueHistory.filter((entry) => entry.phaseNumber === 2)).toHaveLength(0);
+
+    session = unwrap(applyHatGameAction(session, { type: 'end-turn' }, actionOptions));
+
+    expect(session.stage).toBe('ready');
+    expect(session.phaseNumber).toBe(2);
+    expect(session.usedCluePoolIndices).toHaveLength(0);
+    expect(session.lastTurnSummary?.phaseCompleted).toBe(false);
+  });
+
   it('returns skipped and unfinished clues on the next turn', () => {
     let session = makeSession({ cluesPerPlayer: 1 });
     session = unwrap(applyHatGameAction(session, { type: 'start-turn' }, actionOptions));
@@ -144,4 +163,3 @@ describe('Hat Game engine', () => {
     expect(getHatGameContext(makeSession()).activeTeamPlayers).toHaveLength(2);
   });
 });
-
