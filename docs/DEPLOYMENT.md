@@ -10,6 +10,8 @@ Build image:
 npm run docker:build
 ```
 
+This builds both `jdcb4/hat-game-pass-n-play:<version>` and `jdcb4/hat-game-pass-n-play:latest`.
+
 Run locally:
 
 ```bash
@@ -25,8 +27,7 @@ http://localhost:8080
 Manual Docker commands:
 
 ```bash
-docker build -t hat-game-pass-n-play .
-docker run --rm -p 8080:80 hat-game-pass-n-play
+docker run --rm -p 8080:80 jdcb4/hat-game-pass-n-play:latest
 ```
 
 For a server deployment:
@@ -109,4 +110,3 @@ Recommended minimum:
 - Do not commit generated signing keys or credentials.
 - Do not commit generated native `ios` or `android` folders unless the project intentionally moves away from managed Expo.
 - Store submissions require final art assets and privacy/support URLs before they can be completed.
-

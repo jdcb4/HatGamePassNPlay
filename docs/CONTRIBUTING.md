@@ -9,6 +9,8 @@ npm run web
 
 Use `npm run typecheck` and `npm test` before committing.
 
+Read [Versioning](VERSIONING.md) before committing feature or fix work. Version bumps are required when behavior, UX, deployment, dependencies, persistence, or usage documentation changes.
+
 ## Development Workflow
 
 1. Keep domain logic in `src/domain/hatGame` framework-independent.
@@ -42,4 +44,3 @@ Do not commit:
 - web build output.
 - generated native `ios`/`android` folders unless intentionally ejecting/prebuilding.
 - local env files or signing credentials.
-

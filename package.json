@@ -1,6 +1,6 @@
 {
   "name": "hatgame",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -8,8 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web",
-    "docker:build": "docker build -t hat-game-pass-n-play .",
-    "docker:run": "docker run --rm -p 8080:80 hat-game-pass-n-play",
+    "docker:build": "node scripts/docker-build.js",
+    "docker:run": "docker run --rm -p 8080:80 jdcb4/hat-game-pass-n-play:latest",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

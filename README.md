@@ -51,6 +51,7 @@ After `npm run docker:run`, open `http://localhost:8080`.
 - [Game Engine](docs/GAME_ENGINE.md)
 - [Contributor Guide](docs/CONTRIBUTING.md)
 - [Deployment](docs/DEPLOYMENT.md)
+- [Versioning](docs/VERSIONING.md)
 
 ## Distribution
 
