@@ -11,8 +11,9 @@ Cloudflare Pages settings:
 - Framework preset: `None` or custom
 - Root directory: leave blank
 - Build command: `npm run build:web`
-- Build output directory: `dist`
 - Deploy command: leave blank
+- Non-production branch deploy command: leave blank
+- Path: `dist`
 
 Do not use these in Cloudflare Pages:
 
@@ -21,6 +22,8 @@ Do not use these in Cloudflare Pages:
 - any Docker command
 
 Cloudflare Pages already deploys the `dist` folder after the build command succeeds. Docker is only for self-hosting.
+
+In the current Cloudflare build settings panel, the field named `Path` is the output/publish directory. Use `dist`, not `/dist`.
 
 ### Troubleshooting Failed Pages Builds
 
