@@ -61,6 +61,29 @@ Manual Docker commands:
 docker run --rm -p 8080:80 jdcb4/hat-game-pass-n-play:latest
 ```
 
+The port mapping format is `hostPort:containerPort`. The Hat Game image serves nginx on container port `80`, so the right side of the mapping must be `80`.
+
+### CasaOS
+
+For CasaOS, use container target port `80` and publish whichever host port you want to open on your server.
+
+Example CasaOS port mapping for `http://192.168.86.34:3050`:
+
+```yaml
+ports:
+  - target: 80
+    published: "3050"
+    protocol: tcp
+```
+
+With this mapping, open:
+
+```text
+http://192.168.86.34:3050
+```
+
+If CasaOS is configured with `target: 8080`, the container can start successfully but the app will not be reachable, because nginx is not listening on port `8080` inside the container.
+
 For a server deployment:
 
 1. Install Docker on the host.

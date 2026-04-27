@@ -1,6 +1,6 @@
 # Versioning Rules
 
-Current version: `0.1.2`.
+Current version: `0.1.3`.
 
 Hat Game uses semantic versioning in `MAJOR.MINOR.PATCH` format.
 
