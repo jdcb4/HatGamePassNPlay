@@ -1,5 +1,33 @@
 # Deployment
 
+## Web: Cloudflare Pages
+
+Use Cloudflare Pages Git integration for the public web version. This is separate from Docker self-hosting.
+
+Cloudflare Pages settings:
+
+- Repository: `jdcb4/HatGamePassNPlay`
+- Production branch: `main`
+- Framework preset: `None` or custom
+- Root directory: leave blank
+- Build command: `npm run build:web`
+- Build output directory: `dist`
+- Deploy command: leave blank
+
+Do not use these in Cloudflare Pages:
+
+- `npm run docker:build`
+- `npx wrangler deploy`
+- any Docker command
+
+Cloudflare Pages already deploys the `dist` folder after the build command succeeds. Docker is only for self-hosting.
+
+### Troubleshooting Failed Pages Builds
+
+If the log says `Success: Build command completed` and then fails while running `npx wrangler deploy`, remove the Pages deploy command. The deploy command should be blank.
+
+If Wrangler detects a build command like `npm run docker:build`, the project is being treated as a Wrangler/Workers deployment instead of a plain Pages static deployment. Use the Pages settings above.
+
 ## Web: Self-Hosted Docker
 
 The web app is a static Expo export served by Nginx.
