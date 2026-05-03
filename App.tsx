@@ -12,6 +12,7 @@ import {
   TextInput,
   View
 } from 'react-native';
+import packageJson from './package.json';
 import { GAME_DEFAULTS } from './src/config/gameDefaults';
 import clueSuggestions from './src/data/clueSuggestions.json';
 import {
@@ -55,6 +56,7 @@ type ScreenModel = {
 
 const ACTION_LOCK_MS = 500;
 const ActionLockContext = createContext(false);
+const APP_VERSION = packageJson.version;
 
 const createEmptyClues = () => Array.from({ length: GAME_DEFAULTS.cluesPerPlayer }, () => '');
 
@@ -126,6 +128,7 @@ export default function App() {
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [confirmNewGame, setConfirmNewGame] = useState(false);
   const [footerActionsLocked, setFooterActionsLocked] = useState(false);
+  const [showInfoToast, setShowInfoToast] = useState(false);
   const warningCueTurnRef = useRef<string | null>(null);
   const turnEndCueTurnRef = useRef<string | null>(null);
 
@@ -222,6 +225,14 @@ export default function App() {
     const timeout = setTimeout(() => setFooterActionsLocked(false), ACTION_LOCK_MS);
     return () => clearTimeout(timeout);
   }, [actionLockKey]);
+
+  useEffect(() => {
+    if (!showInfoToast) {
+      return undefined;
+    }
+    const timeout = setTimeout(() => setShowInfoToast(false), 4200);
+    return () => clearTimeout(timeout);
+  }, [showInfoToast]);
 
   const startNewGame = async () => {
     setConfirmNewGame(false);
@@ -351,7 +362,7 @@ export default function App() {
     }
     const clues = snapshot.clueSubmissions[player.id]?.clues ?? createEmptyClues();
     if (clues.some((clue) => clue.trim().length === 0)) {
-      setError(`Fill in every clue before handing the phone on from ${player.name}.`);
+      setError(`Fill in every famous figure before handing the phone on from ${player.name}.`);
       return;
     }
     if (snapshot.clueEntryIndex >= snapshot.players.length - 1) {
@@ -430,7 +441,7 @@ export default function App() {
     content: (
       <Panel
         title="Hat Game"
-        subtitle="A pass-and-play Celebrity-style party game. Add clues, split into teams, then race through Describe, One Word, and Charades with the same clue pool."
+        subtitle="A pass-and-play Celebrity-style party game. Add famous figures, split into teams, then race through Describe, One Word, and Charades with the same figure pool."
       >
         {savedRecord ? (
           <Text style={styles.notice}>Saved game found from {formatSavedAt(savedRecord.lastSavedAt)}.</Text>
@@ -531,7 +542,7 @@ export default function App() {
 
   const renderReview = (): ScreenModel => ({
     content: (
-      <Panel title="Review teams" subtitle="Pass the phone around for private clue entry after this.">
+      <Panel title="Review teams" subtitle="Pass the phone around for private famous figure entry after this.">
         {snapshot.teams.map((team) => (
           <View key={team.id} style={styles.reviewCard}>
             <Text style={styles.reviewTitle}>{team.name}</Text>
@@ -551,7 +562,7 @@ export default function App() {
           label="Edit teams"
           onPress={() => setSnapshot((current) => ({ ...current, step: 'team', teamEditIndex: 0 }))}
         />
-        <PrimaryButton label="Start clue entry" onPress={startClueEntry} />
+        <PrimaryButton label="Start famous figure entry" onPress={startClueEntry} />
       </>
     )
   });
@@ -565,7 +576,7 @@ export default function App() {
     if (!snapshot.clueEntryRevealed) {
       return {
         content: (
-          <Panel title={`Pass to ${player.name}`} subtitle={`Clue pack ${snapshot.clueEntryIndex + 1} of ${snapshot.players.length}`}>
+          <Panel title={`Pass to ${player.name}`} subtitle={`Figure pack ${snapshot.clueEntryIndex + 1} of ${snapshot.players.length}`}>
             <Text style={styles.notice}>Only {player.name} should look at the screen for this step.</Text>
           </Panel>
         ),
@@ -579,20 +590,20 @@ export default function App() {
     }
     return {
       content: (
-        <Panel title={`${player.name}'s clues`} subtitle="Enter people or characters most players could know.">
+        <Panel title={`${player.name}'s famous figures`} subtitle="Enter people or characters most players could know.">
           {clues.map((clue, index) => (
             <View key={`${player.id}-clue-${index}`} style={styles.clueRow}>
+              <Text style={styles.clueNumber}>{index + 1}.</Text>
               <View style={styles.clueInputWrap}>
-                <Label>{`Clue ${index + 1}`}</Label>
                 <TextInput
                   style={styles.input}
                   value={clue}
                   maxLength={GAME_DEFAULTS.maxClueLength}
-                  placeholder="Enter a person name"
+                  placeholder="Enter a famous figure"
                   onChangeText={(text) => updateClue(player.id, index, text)}
                 />
               </View>
-              <SecondaryButton label="Suggest" onPress={() => fillSuggestion(player.id, index)} />
+              <IconButton label="Lightning suggestion" icon="⚡" onPress={() => fillSuggestion(player.id, index)} />
             </View>
           ))}
         </Panel>
@@ -659,10 +670,11 @@ export default function App() {
           </Text>
           {activeTurn?.skippedClues.length ? (
             <View style={styles.skippedBox}>
-              <Text style={styles.sectionTitle}>Skipped clues</Text>
+              <Text style={styles.sectionTitle}>Skipped famous figures</Text>
               {activeTurn.skippedClues.map((clue) => (
-                <SecondaryButton
+                <IconTextButton
                   key={clue.poolIndex}
+                  icon="↶"
                   label={clue.text}
                   onPress={() =>
                     dispatchGameAction({ type: 'return-skipped-clue', payload: { poolIndex: clue.poolIndex } })
@@ -675,8 +687,7 @@ export default function App() {
       ),
       actions: (
         <>
-          <SecondaryButton label="End turn" onPress={() => dispatchGameAction({ type: 'end-turn' })} />
-          <SecondaryButton
+          <PrimaryButton
             label="Skip"
             disabled={(activeTurn?.skipsRemaining ?? 0) <= 0}
             onPress={() => dispatchGameAction({ type: 'skip-clue' })}
@@ -752,6 +763,8 @@ export default function App() {
 
   const screen = getScreen();
   const showExit = loaded && snapshot.step !== 'landing';
+  const showInfo = loaded && snapshot.step === 'landing';
+  const showEndTurn = loaded && snapshot.step === 'game' && snapshot.session?.stage === 'turn';
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -764,12 +777,28 @@ export default function App() {
         <View style={styles.shell}>
           <View style={styles.header}>
             <Text style={styles.appTitle}>Hat Game</Text>
-            {showExit ? (
-              <Pressable style={styles.headerButton} onPress={exitToLanding}>
-                <Text style={styles.headerButtonText}>Exit</Text>
-              </Pressable>
+            {showInfo || showEndTurn || showExit ? (
+              <View style={styles.headerActions}>
+                {showEndTurn ? (
+                  <Pressable style={styles.headerButton} onPress={() => dispatchGameAction({ type: 'end-turn' })}>
+                    <Text style={styles.headerButtonText}>End turn</Text>
+                  </Pressable>
+                ) : null}
+                {showExit ? (
+                  <Pressable style={styles.headerButton} onPress={exitToLanding}>
+                    <Text style={styles.headerButtonText}>Exit</Text>
+                  </Pressable>
+                ) : null}
+                {showInfo ? <IconButton label="App information" icon="i" onPress={() => setShowInfoToast(true)} /> : null}
+              </View>
             ) : null}
           </View>
+          {showInfoToast ? (
+            <View style={styles.toast}>
+              <Text style={styles.toastTitle}>Hat Game</Text>
+              <Text style={styles.toastText}>By jdcb4. Version {APP_VERSION}.</Text>
+            </View>
+          ) : null}
           <ScrollView
             contentContainerStyle={styles.container}
             keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'none'}
@@ -881,10 +910,50 @@ function SecondaryButton({ label, onPress, disabled = false }: ButtonProps) {
   );
 }
 
+function IconButton({ label, icon, onPress, disabled = false }: IconButtonProps) {
+  const footerActionsLocked = useContext(ActionLockContext);
+  const isDisabled = disabled || footerActionsLocked;
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      disabled={isDisabled}
+      style={[styles.iconButton, isDisabled && styles.disabledButton]}
+      onPress={onPress}
+    >
+      <Text style={styles.iconButtonText}>{icon}</Text>
+    </Pressable>
+  );
+}
+
+function IconTextButton({ icon, label, onPress, disabled = false }: IconTextButtonProps) {
+  const footerActionsLocked = useContext(ActionLockContext);
+  const isDisabled = disabled || footerActionsLocked;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={isDisabled}
+      style={[styles.iconTextButton, isDisabled && styles.disabledButton]}
+      onPress={onPress}
+    >
+      <Text style={styles.iconTextIcon}>{icon}</Text>
+      <Text style={styles.iconTextLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
 type ButtonProps = {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+};
+
+type IconButtonProps = ButtonProps & {
+  icon: string;
+};
+
+type IconTextButtonProps = ButtonProps & {
+  icon: string;
 };
 
 const styles = StyleSheet.create({
@@ -915,6 +984,7 @@ const styles = StyleSheet.create({
   },
   appTitle: {
     color: '#1f2933',
+    flexShrink: 1,
     fontSize: 32,
     fontWeight: '800'
   },
@@ -928,6 +998,37 @@ const styles = StyleSheet.create({
   headerButtonText: {
     color: '#4a4034',
     fontWeight: '700'
+  },
+  headerActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8
+  },
+  toast: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#fffaf2',
+    borderColor: '#d4c5b0',
+    borderRadius: 8,
+    borderWidth: 1,
+    marginHorizontal: 18,
+    marginBottom: 10,
+    maxWidth: 280,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 12
+  },
+  toastTitle: {
+    color: '#1f2933',
+    fontSize: 16,
+    fontWeight: '800'
+  },
+  toastText: {
+    color: '#695f51',
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 3
   },
   footer: {
     backgroundColor: '#fffaf2',
@@ -1036,6 +1137,47 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800'
   },
+  iconButton: {
+    alignItems: 'center',
+    backgroundColor: '#eadfce',
+    borderColor: '#d4c5b0',
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 46,
+    justifyContent: 'center',
+    width: 46
+  },
+  iconButtonText: {
+    color: '#2e473d',
+    fontSize: 20,
+    fontWeight: '900',
+    lineHeight: 24
+  },
+  iconTextButton: {
+    alignItems: 'center',
+    backgroundColor: '#eadfce',
+    borderColor: '#d4c5b0',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'flex-start',
+    minHeight: 46,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  iconTextIcon: {
+    color: '#2e473d',
+    fontSize: 19,
+    fontWeight: '900',
+    lineHeight: 22
+  },
+  iconTextLabel: {
+    color: '#2e473d',
+    flexShrink: 1,
+    fontSize: 16,
+    fontWeight: '800'
+  },
   error: {
     backgroundColor: '#fee2e2',
     borderColor: '#ef4444',
@@ -1083,9 +1225,16 @@ const styles = StyleSheet.create({
     lineHeight: 20
   },
   clueRow: {
-    alignItems: 'flex-end',
+    alignItems: 'center',
     flexDirection: 'row',
     gap: 10
+  },
+  clueNumber: {
+    color: '#695f51',
+    fontSize: 17,
+    fontWeight: '800',
+    minWidth: 24,
+    textAlign: 'right'
   },
   clueInputWrap: {
     flex: 1

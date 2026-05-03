@@ -98,7 +98,7 @@ const advancePhaseWithinTurn = (
   rng: () => number
 ): HatGameActionResult => {
   if (hasUnresolvedSkippedClues(activeTurn)) {
-    return { error: 'Bring the skipped clue back before moving to the next phase' };
+    return { error: 'Bring the skipped famous figure back before moving to the next phase' };
   }
 
   const nextPhaseNumber = Math.min(session.phaseNumber + 1, 3);
@@ -108,7 +108,7 @@ const advancePhaseWithinTurn = (
   );
 
   if (nextQueue.length === 0) {
-    return { error: 'No clues are available for the next phase' };
+    return { error: 'No famous figures are available for the next phase' };
   }
 
   return {
@@ -288,7 +288,7 @@ export const applyHatGameAction = (
     }
     const clueQueue = collectClueQueue(session, rng);
     if (clueQueue.length === 0) {
-      return { error: 'No clues are available for this turn right now' };
+      return { error: 'No famous figures are available for this turn right now' };
     }
     const startedAt = nowMs();
     return {
@@ -389,12 +389,12 @@ export const applyHatGameAction = (
       }
     }
     if (availableSkippedClues.length === 0) {
-      return { error: 'There is no skipped clue to return to' };
+      return { error: 'There is no skipped famous figure to return to' };
     }
     const targetPoolIndex = action.payload?.poolIndex ?? availableSkippedClues[0]?.poolIndex ?? null;
     const targetSkippedClue = availableSkippedClues.find((clue) => clue.poolIndex === targetPoolIndex);
     if (!targetSkippedClue) {
-      return { error: 'The skipped clue is no longer available' };
+      return { error: 'The skipped famous figure is no longer available' };
     }
     activeTurn.skippedClues = activeTurn.skippedClues.filter(
       (clue) => clue.poolIndex !== targetPoolIndex
@@ -413,7 +413,7 @@ export const applyHatGameAction = (
     }
     const skippedIndex = activeTurn.clueQueue.findIndex((clue) => clue.poolIndex === targetPoolIndex);
     if (skippedIndex === -1) {
-      return { error: 'The skipped clue is no longer available' };
+      return { error: 'The skipped famous figure is no longer available' };
     }
     if (skippedIndex !== activeTurn.queueIndex) {
       const [skippedClue] = activeTurn.clueQueue.splice(skippedIndex, 1);
