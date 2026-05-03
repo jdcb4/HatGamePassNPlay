@@ -3,6 +3,7 @@ import type React from 'react';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -235,7 +236,7 @@ export default function App() {
     if (!showInfoToast) {
       return undefined;
     }
-    const timeout = setTimeout(() => setShowInfoToast(false), 4200);
+    const timeout = setTimeout(() => setShowInfoToast(false), 5000);
     return () => clearTimeout(timeout);
   }, [showInfoToast]);
 
@@ -798,12 +799,6 @@ export default function App() {
               </View>
             ) : null}
           </View>
-          {showInfoToast ? (
-            <View style={styles.toast}>
-              <Text style={styles.toastTitle}>Hat Game</Text>
-              <Text style={styles.toastText}>By jdcb4. Version {APP_VERSION}.</Text>
-            </View>
-          ) : null}
           <ScrollView
             contentContainerStyle={styles.container}
             keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'none'}
@@ -817,6 +812,24 @@ export default function App() {
               <View style={styles.footer}>{screen.actions}</View>
             </ActionLockContext.Provider>
           ) : null}
+          <Modal animationType="fade" transparent visible={showInfoToast} onRequestClose={() => setShowInfoToast(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.infoPopup}>
+                <View style={styles.infoPopupHeader}>
+                  <Text style={styles.toastTitle}>Hat Game</Text>
+                  <Pressable
+                    accessibilityLabel="Close app information"
+                    accessibilityRole="button"
+                    style={styles.popupCloseButton}
+                    onPress={() => setShowInfoToast(false)}
+                  >
+                    <Text style={styles.popupCloseButtonText}>x</Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.toastText}>By jdcb4. Version {APP_VERSION}.</Text>
+              </View>
+            </View>
+          </Modal>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -1009,31 +1022,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8
   },
-  toast: {
-    alignSelf: 'flex-end',
+  modalOverlay: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(31, 41, 51, 0.34)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24
+  },
+  infoPopup: {
     backgroundColor: '#fffaf2',
     borderColor: '#d4c5b0',
     borderRadius: 8,
     borderWidth: 1,
-    marginHorizontal: 18,
-    marginBottom: 10,
-    maxWidth: 280,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    maxWidth: 340,
+    padding: 18,
     shadowColor: '#000',
     shadowOpacity: 0.12,
-    shadowRadius: 12
+    shadowRadius: 12,
+    width: '100%'
+  },
+  infoPopupHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12
   },
   toastTitle: {
     color: '#1f2933',
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '800'
   },
   toastText: {
     color: '#695f51',
     fontSize: 14,
     lineHeight: 20,
-    marginTop: 3
+    marginTop: 10
+  },
+  popupCloseButton: {
+    alignItems: 'center',
+    backgroundColor: '#eadfce',
+    borderColor: '#d4c5b0',
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: 'center',
+    width: 36
+  },
+  popupCloseButtonText: {
+    color: '#4a4034',
+    fontSize: 18,
+    fontWeight: '900',
+    lineHeight: 20
   },
   footer: {
     backgroundColor: '#fffaf2',
