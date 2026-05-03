@@ -2,6 +2,8 @@ import { StatusBar } from 'expo-status-bar';
 import type React from 'react';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -754,25 +756,35 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar style="dark" />
-      <View style={styles.shell}>
-        <View style={styles.header}>
-          <Text style={styles.appTitle}>Hat Game</Text>
-          {showExit ? (
-            <Pressable style={styles.headerButton} onPress={exitToLanding}>
-              <Text style={styles.headerButtonText}>Exit</Text>
-            </Pressable>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
+        keyboardVerticalOffset={0}
+        style={styles.keyboardAvoiding}
+      >
+        <View style={styles.shell}>
+          <View style={styles.header}>
+            <Text style={styles.appTitle}>Hat Game</Text>
+            {showExit ? (
+              <Pressable style={styles.headerButton} onPress={exitToLanding}>
+                <Text style={styles.headerButtonText}>Exit</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'none'}
+            keyboardShouldPersistTaps="handled"
+          >
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {screen.content}
+          </ScrollView>
+          {screen.actions ? (
+            <ActionLockContext.Provider value={footerActionsLocked}>
+              <View style={styles.footer}>{screen.actions}</View>
+            </ActionLockContext.Provider>
           ) : null}
         </View>
-        <ScrollView contentContainerStyle={styles.container}>
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          {screen.content}
-        </ScrollView>
-        {screen.actions ? (
-          <ActionLockContext.Provider value={footerActionsLocked}>
-            <View style={styles.footer}>{screen.actions}</View>
-          </ActionLockContext.Provider>
-        ) : null}
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -879,6 +891,9 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#f3f0e8'
+  },
+  keyboardAvoiding: {
+    flex: 1
   },
   shell: {
     flex: 1,
