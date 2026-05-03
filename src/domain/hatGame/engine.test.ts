@@ -93,6 +93,17 @@ describe('Hat Game engine', () => {
     expect(session.lastTurnSummary?.phaseCompleted).toBe(false);
   });
 
+  it('scores the active turn when an action detects timeout expiry', () => {
+    let session = makeSession({ cluesPerPlayer: 2 });
+    session = unwrap(applyHatGameAction(session, { type: 'start-turn' }, actionOptions));
+    session = unwrap(applyHatGameAction(session, { type: 'mark-correct' }, actionOptions));
+    session = unwrap(applyHatGameAction(session, { type: 'skip-clue' }, { ...actionOptions, isPast: () => true }));
+
+    expect(session.stage).toBe('ready');
+    expect(session.lastTurnSummary?.scoreDelta).toBe(1);
+    expect(session.teams.some((team) => team.score === 1)).toBe(true);
+  });
+
   it('returns skipped and unfinished clues on the next turn', () => {
     let session = makeSession({ cluesPerPlayer: 1 });
     session = unwrap(applyHatGameAction(session, { type: 'start-turn' }, actionOptions));

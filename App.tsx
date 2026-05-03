@@ -131,6 +131,11 @@ export default function App() {
   const [showInfoToast, setShowInfoToast] = useState(false);
   const warningCueTurnRef = useRef<string | null>(null);
   const turnEndCueTurnRef = useRef<string | null>(null);
+  const snapshotRef = useRef(snapshot);
+
+  useEffect(() => {
+    snapshotRef.current = snapshot;
+  }, [snapshot]);
 
   useEffect(() => {
     loadSavedState<StoragePayload | AppSnapshot>()
@@ -384,7 +389,7 @@ export default function App() {
   };
 
   const dispatchGameAction = (action: HatGameAction) => {
-    const previousSession = snapshot.session;
+    const previousSession = snapshotRef.current.session;
     if (!previousSession) {
       return;
     }
